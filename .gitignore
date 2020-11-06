@@ -15,3 +15,4 @@ cross
 *.test
 coverage*.txt
 gosec_output.csv
+.DS_Store

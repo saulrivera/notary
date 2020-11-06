@@ -1,12 +1,37 @@
 version: "2"
 services:
+  registry-server:
+    image: registry:2
+    restart: always
+    container_name: registry-server
+    networks:
+      notary:
+      registry:
+        aliases:
+          - registry.example.local
+    ports:
+      - 5000:5000
+    environment:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_PATH: /opt/auth/htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+      REGISTRY_HTTP_TLS_CERTIFICATE: /opt/certs/registry.example.local.crt
+      REGISTRY_HTTP_TLS_KEY: /opt/certs/registry.example.local.key
+      REGISTRY_HTTP_SECRET: BTpFsd82m01jdyg7ubhew78huij%
+    volumes:
+      - registry_data:/var/lib/registry
+      - ./files/certs:/opt/certs
+      - ./files/auth:/opt/auth
   server:
     build:
       context: .
       dockerfile: server.Dockerfile
     networks:
-      - mdb
-      - sig
+      mdb:
+      sig:
+      notary:
+        aliases:
+          - notary-server.example.local
     ports:
       - "8080"
       - "4443:4443"
@@ -42,8 +67,14 @@ services:
 volumes:
   notary_data:
     external: false
+  registry_data:
+    external: false
 networks:
   mdb:
     external: false
   sig:
+    external: false
+  registry:
+      external: false
+  notary:
     external: false
